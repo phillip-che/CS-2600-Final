@@ -5,36 +5,6 @@
 #include <stdio.h>
 #include <string.h>
 
-int main(int argc, char **argv)
-{
-   // Load config files, if any.
-
-   // Run command loop.
-   lsh_loop();
-
-   // Perform any shutdown/cleanup.
-
-   return EXIT_SUCCESS;
-}
-
-void lsh_loop(void)
-{
-   char *line;
-   char **args;
-   int status;
-
-   do
-   {
-      printf("> ");
-      line = lsh_read_line();
-      args = lsh_split_line(line);
-      status = lsh_execute(args);
-
-      free(line);
-      free(args);
-   } while (status);
-}
-
 #define LSH_RL_BUFSIZE 1024
 char *lsh_read_line(void)
 {
@@ -167,7 +137,7 @@ char *builtin_str[] =
    "exit"
 };
 
-int (*builtin_func[]) (char **) == 
+int (*builtin_func[]) (char **) = 
 {
    &lsh_cd,
    &lsh_help,
@@ -232,11 +202,41 @@ int lsh_execute(char **args)
 
    for (i = 0; i < lsh_num_builtins(); i++)
    {
-      if(strcmp(args0, builtin_str[i]) == 0)
+      if(strcmp(args[0], builtin_str[i]) == 0)
       {
          return (*builtin_func[i])(args);
       }
    }
 
    return lsh_launch(args);
+}
+
+void lsh_loop(void)
+{
+   char *line;
+   char **args;
+   int status;
+
+   do
+   {
+      printf("> ");
+      line = lsh_read_line();
+      args = lsh_split_line(line);
+      status = lsh_execute(args);
+
+      free(line);
+      free(args);
+   } while (status);
+}
+
+int main(int argc, char **argv)
+{
+   // Load config files, if any.
+
+   // Run command loop.
+   lsh_loop();
+
+   // Perform any shutdown/cleanup.
+
+   return EXIT_SUCCESS;
 }
