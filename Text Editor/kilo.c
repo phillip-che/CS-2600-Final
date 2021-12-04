@@ -30,7 +30,7 @@ enum editorKey
     ARROW_UP,
     ARROW_DOWN,
     DEL_KEY,
-    HOME__KEY,
+    HOME_KEY,
     END_KEY,
     PAGE_UP,
     PAGE_DOWN
@@ -131,7 +131,7 @@ int editorReadKey()
                     switch (seq[1])
                     {
                         case '1':
-                            return HOME__KEY;
+                            return HOME_KEY;
                         case '3':
                             return DEL_KEY;
                         case '4':
@@ -141,7 +141,7 @@ int editorReadKey()
                         case '6':
                             return PAGE_DOWN;
                         case '7':
-                            return HOME__KEY;
+                            return HOME_KEY;
                         case '8':
                             return END_KEY;
                     }
@@ -160,7 +160,7 @@ int editorReadKey()
                     case 'D':
                         return ARROW_LEFT;
                     case 'H': 
-                        return HOME__KEY;
+                        return HOME_KEY;
                     case 'F':
                         return END_KEY;
                 }
@@ -171,7 +171,7 @@ int editorReadKey()
             switch (seq[1])
             {
                 case 'H':
-                    return HOME__KEY;
+                    return HOME_KEY;
                 case 'F':
                     return END_KEY;
             }
@@ -181,7 +181,7 @@ int editorReadKey()
     } 
     else
     {
-    return c;
+        return c;
     }
 }
 
@@ -290,6 +290,28 @@ void editorAppendRow(char *s, size_t len)
     E.row[at].rsize = 0;
     E.row[at].render = NULL;
     editorUpdateRow(&E.row[at]);
+}
+
+void editorRowInsertChar(erow *row, int at, int c)
+{
+    if (at < 0 || at > row->size)
+        at = row->size;
+    row->chars = realloc(row->chars, row->size + 2);
+    memmove(&row->chars[at + 1], &row->chars[at], row->size - at + 1);
+    row->size++;
+    row->chars[at] = c;
+    editorUpdateRow(row);
+}
+
+/*** editor operations ***/
+
+void editorInsertChar(int c)
+{
+    if (E.cy == E.numrows)
+        editorAppendRow("", 0);
+    
+    editorRowInsertChar(&E.row[E.cy], E.cx, c);
+    E.cx++;
 }
 
 /*** file i/o ***/
@@ -550,7 +572,7 @@ void editorProcessKeypress()
             exit(0);
             break;
 
-        case HOME__KEY:
+        case HOME_KEY:
             E.cx = 0;
             break;
         
@@ -584,6 +606,10 @@ void editorProcessKeypress()
         case ARROW_DOWN:
         case ARROW_RIGHT:
             editorMoveCursor(c);
+            break;
+        
+        default:
+            editorInsertChar(c);
             break;
     }
 }
