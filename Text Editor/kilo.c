@@ -285,23 +285,23 @@ void abFree(struct abuf *ab)
 
 /*** output ***/
 
-void editorScroll()
+void editorScroll() 
 {
-    if (E.cy < E.rowoff)
+    if (E.cy < E.rowoff) 
     {
         E.rowoff = E.cy;
     }
-    if (E.cy >= E.rowoff + E.screenrows)
+    if (E.cy >= E.rowoff + E.screenrows) 
     {
         E.rowoff = E.cy - E.screenrows + 1;
     }
-    if (E.cx < E.coloff)
+    if (E.cx < E.coloff) 
     {
         E.coloff = E.cx;
     }
-    if (E.cx >= E.coloff + E.screencols)
+    if (E.cx >= E.coloff + E.screencols) 
     {
-        E.coloff = E.cx - E.screenrows + 1;
+        E.coloff = E.cx - E.screencols + 1;
     }
 }
 
@@ -344,6 +344,7 @@ void editorDrawRows(struct abuf *ab)
                 len = E.screencols;
             abAppend(ab, &E.row[filerow].chars[E.coloff], len);
         }
+
         abAppend(ab, "\x1b[K", 3);
         if (y < E.screenrows - 1)
         {
@@ -377,6 +378,8 @@ void editorRefreshScreen()
 
 void editorMoveCursor(int key)
 {
+    erow *row = (E.cy >= E.numrows) ? NULL : &E.row[E.cy];
+
     switch (key)
     {
         case ARROW_LEFT:
@@ -384,22 +387,42 @@ void editorMoveCursor(int key)
             {
                 E.cx--;
             }
+            else if (E.cy > 0)
+            {
+                E.cy--;
+                E.cx = E.row[E.cy].size;
+            }
             break;
         case ARROW_RIGHT:
-            E.cx++;
+            if (row && E.cx < row->size)
+            {
+                E.cx++;
+            }
+            else if (row && E.cx == row->size)
+            {
+                E.cy++;
+                E.cx = 0;
+            }
             break;
         case ARROW_UP:
             if (E.cy != 0)
             {
-            E.cy--;
+                E.cy--;
             }
             break;
         case ARROW_DOWN:
             if (E.cy < E.numrows)
             {
-            E.cy++;
+                E.cy++;
             }
             break;
+    }
+
+    row = (E.cy >= E.numrows) ? NULL : &E.row[E.cy];
+    int rowlen = row ? row->size : 0;
+    if (E.cx > rowlen)
+    {
+        E.cx = rowlen;
     }
 }
 
