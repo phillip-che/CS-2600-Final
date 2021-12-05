@@ -21,6 +21,7 @@
 
 #define KILO_VERSION "0.01"
 #define KILO_TAB_STOP 8
+#define KILO_QUIT_TIMES 3
 
 #define CTRL_KEY(k) ((k) & 0x1f)
 
@@ -624,6 +625,8 @@ void editorMoveCursor(int key)
 
 void editorProcessKeypress()
 {
+    static int quit_times = KILO_QUIT_TIMES;
+
     int c = editorReadKey();
 
     switch (c)
@@ -633,6 +636,13 @@ void editorProcessKeypress()
             break;
 
         case CTRL_KEY('q'):
+            if (E.dirty && quit_times > 0)
+            {
+                editorSetStatusMessage("WARNING!! File has unsaved changes. " 
+                    "Press Ctrl-Q %d more times to quit.", quit_times);
+                quit_times--;
+                return;
+            }
             write(STDOUT_FILENO, "\x1b[2J", 4);
             write(STDOUT_FILENO, "\x1b[H", 3);
             exit(0);
@@ -692,6 +702,8 @@ void editorProcessKeypress()
             editorInsertChar(c);
             break;
     }
+
+    quit_times = KILO_QUIT_TIMES;
 }
 
 /*** init ***/
